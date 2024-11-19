@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲採集計算器</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .time-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .time-input {
+            flex: 1;
+        }
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #444;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .info-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        .calculation-block {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .value-display {
+            background: white;
+            padding: 10px;
+            border: 1px solid #b3d4ff;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .value-text {
+            color: #2563eb;
+            font-weight: 500;
+        }
+        .results {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .result-item {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .result-title {
+            color: #059669;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-title">遊戲採集計算器</div>
+        
+        <div class="input-group">
+            <label for="itemName">採集道具名稱</label>
+            <input type="text" id="itemName" placeholder="例如：水果" value="水果">
+            <div id="itemNameInfo" class="info-text">當前道具：水果</div>
+        </div>
+
+        <div class="calculation-block">
+            <div class="input-group">
+                <label for="totalItems">總採集數量</label>
+                <input type="number" id="totalItems" placeholder="例如：100" value="100">
+                <div id="totalItemsInfo" class="info-text">總共需要採集：100個水果</div>
+            </div>
+
+            <div class="input-group">
+                <label for="sellPerSecond">每秒販售數量</label>
+                <input type="number" id="sellPerSecond" placeholder="例如：10" value="10">
+                <div id="sellPerSecondInfo" class="info-text">每秒可販售：10個水果</div>
+            </div>
+
+            <div class="input-group">
+                <label for="reward">採集完成獎勵（遊戲幣）</label>
+                <input type="number" id="reward" placeholder="例如：35000" value="35000">
+                <div id="rewardInfo" class="info-text">採集完成可得：35,000遊戲幣</div>
+            </div>
+
+            <div id="valueDisplay" class="value-display">
+                <div id="pricePerItem" class="value-text">每個水果價值：350遊戲幣</div>
+                <div id="rewardPerSecond" class="value-text" style="margin-top:5px">每秒販售收入：3,500遊戲幣</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>採集所需時間</label>
+            <div class="time-input-group">
+                <div class="time-input">
+                    <input type="number" id="timeHours" placeholder="0" min="0" value="0">
+                    <div class="info-text">小時</div>
+                </div>
+                <div class="time-input">
+                    <input type="number" id="timeMinutes" placeholder="0" min="0" value="5">
+                    <div class="info-text">分鐘</div>
+                </div>
+                <div class="time-input">
+                    <input type="number" id="timeSeconds" placeholder="0" min="0" value="0">
+                    <div class="info-text">秒</div>
+                </div>
+            </div>
+            <div id="timeInfo" class="info-text">採集總需時：5分鐘</div>
+        </div>
+
+        <div class="input-group">
+            <label for="targetAmount">目標金額（遊戲幣）</label>
+            <input type="number" id="targetAmount" placeholder="例如：8000000" value="8000000">
+            <div id="targetInfo" class="info-text">目標：8,000,000遊戲幣</div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="result-title">即時計算結果</div>
+            <div id="timeNeeded" class="result-item">達到目標需要：3天 18小時 40分鐘</div>
+            <div id="sellTime" class="result-item">全部販售需要：10秒</div>
+            <div id="moneyPerMinute" class="result-item">每分鐘收入：210,000遊戲幣</div>
+            <div id="moneyPerHour" class="result-item">每小時收入：12,600,000遊戲幣</div>
+        </div>
+    </div>
+
+    <script>
+        function formatNumber(num) {
+            return new Intl.NumberFormat().format(num);
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            let timeText = '';
+            if (hours > 0) timeText += `${hours}小時 `;
+            if (minutes > 0) timeText += `${minutes}分鐘 `;
+            if (seconds > 0) timeText += `${seconds}秒`;
+            return timeText.trim();
+        }
+
+        function calculateResults() {
+            const itemName = document.getElementById('itemName').value;
+            const totalItems = parseFloat(document.getElementById('totalItems').value);
+            const sellPerSecond = parseFloat(document.getElementById('sellPerSecond').value);
+            const reward = parseFloat(document.getElementById('reward').value);
+            const timeHours = parseFloat(document.getElementById('timeHours').value) || 0;
+            const timeMinutes = parseFloat(document.getElementById('timeMinutes').value) || 0;
+            const timeSeconds = parseFloat(document.getElementById('timeSeconds').value) || 0;
+            const targetAmount = parseFloat(document.getElementById('targetAmount').value);
+
+            // 總時間轉換為秒
+            const totalTimeInSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
+
+            if (!totalItems || !reward || !targetAmount || !sellPerSecond || totalTimeInSeconds === 0) {
+                return;
+            }
+
+            // 計算每個道具的價值
+            const pricePerItem = reward / totalItems;
+
+            // 每秒收入
+            const revenuePerSecond = pricePerItem * sellPerSecond;
+
+            // 販售時間計算
+            const totalSellTimeSeconds = Math.ceil(totalItems / sellPerSecond);
+            
+            // 計算達到目標需要的時間
+            const totalTasksNeeded = Math.ceil(targetAmount / reward);
+            const totalTimeNeeded = totalTasksNeeded * totalTimeInSeconds;
+            const days = Math.floor(totalTimeNeeded / (24 * 3600));
+            const hours = Math.floor((totalTimeNeeded % (24 * 3600)) / 3600);
+            const minutes = Math.floor((totalTimeNeeded % 3600) / 60);
+
+            // 更新顯示
+            document.getElementById('itemNameInfo').textContent = `當前道具：${itemName}`;
+            document.getElementById('totalItemsInfo').textContent = `總共需要採集：${formatNumber(totalItems)}個${itemName}`;
+            document.getElementById('sellPerSecondInfo').textContent = `每秒可販售：${formatNumber(sellPerSecond)}個${itemName}`;
+            document.getElementById('rewardInfo').textContent = `採集完成可得：${formatNumber(reward)}遊戲幣`;
+            
+            const timeInfoText = formatTime(totalTimeInSeconds);
+            document.getElementById('timeInfo').textContent = `採集總需時：${timeInfoText}`;
+            
+            document.getElementById('targetInfo').textContent = `目標：${formatNumber(targetAmount)}遊戲幣`;
+
+            document.getElementById('pricePerItem').textContent = 
+                `每個${itemName}價值：${formatNumber(pricePerItem.toFixed(1))}遊戲幣`;
+            document.getElementById('rewardPerSecond').textContent = 
+                `每秒販售收入：${formatNumber(revenuePerSecond.toFixed(0))}遊戲幣`;
+
+            let timeText = '';
+            if (days > 0) timeText += `${days}天 `;
+            if (hours > 0) timeText += `${hours}小時 `;
+            if (minutes > 0) timeText += `${minutes}分鐘`;
+
+            document.getElementById('timeNeeded').textContent = `達到目標需要：${timeText}`;
+            document.getElementById('sellTime').textContent = `全部販售需要：${totalSellTimeSeconds}秒`;
+            document.getElementById('moneyPerMinute').textContent = 
+                `每分鐘收入：${formatNumber(Math.floor(revenuePerSecond * 60))}遊戲幣`;
+            document.getElementById('moneyPerHour').textContent = 
+                `每小時收入：${formatNumber(Math.floor(revenuePerSecond * 3600))}遊戲幣`;
+        }
+
+        // 為所有輸入添加事件監聽器
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', calculateResults);
+        });
+
+        // 初始計算
+        calculateResults();
+    </script>
+</body>
+</html>
